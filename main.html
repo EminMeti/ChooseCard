@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soru Kartı Oyunu</title>
+<style>
+  :root {
+    --primary-color: #D6336C;
+    --primary-light: #F8D7E2;
+    --card-bg: #FFFFFF;
+    --card-border: #D6336C;
+    --button-bg: transparent;
+    --button-color: #D6336C;
+    --button-hover-bg: #D6336C;
+    --button-hover-color: #fff;
+    --box-bg: #F8D7E2;
+    --box-text: #D6336C;
+    --box-back-bg: #D6336C;
+    --box-back-text: #FCE4EC;
+    --box-back-text2: #D6336C;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding-top: 20px;
+    background: #f2f2f2;
+    position: relative;
+  }
+
+  .question-container {
+    width: 100%;
+    max-width: 1100px;
+    margin-bottom: 50px;
+  }
+
+  .grid-container {
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  .logo-left, .logo-right {
+    position: absolute;
+    top: 15px;
+    width: 120px;
+    height: 120px;
+    margin-top: 75px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+  }
+  .logo-left { left: 25px; background-image: url('headerlogotr.png'); }
+  .logo-right { right: 25px; background-image: url('logo.png'); }
+
+  .question-card {
+    width: 100%;
+    max-width: 1100px;
+    min-height: 240px;
+    perspective: 1000px;
+    margin-bottom: 25px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .question-inner {
+    position: relative;
+    width: 100%;
+    min-height: 240px;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    border-radius: 20px;
+  }
+
+  .question-card.flipped .question-inner {
+    transform: rotateY(180deg);
+  }
+
+  .question-front, .question-back {
+    position: absolute;
+    width: 1070px;
+    min-height: 240px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(214, 51, 108, 0.3);
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    padding: 20px;
+    text-align: center;
+    background: var(--card-bg);
+  }
+
+  .question-back {
+    transform: rotateY(180deg);
+    border: 2px solid var(--card-border);
+    justify-content: flex-start;
+    padding-top: 20px;
+    gap: 20px;
+  }
+
+  .question-text {
+    color: var(--primary-color);
+    font-size: clamp(20px, 3vw, 25px);
+    margin-top: 65px;
+  }
+
+  .answer-text {
+    font-size: clamp(16px, 2.5vw, 20px);
+    color: var(--box-back-text2);
+    display: none;
+    margin-top: 15px;
+  }
+
+  .back-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: auto;
+    flex-wrap: wrap;
+  }
+
+  .back-buttons button {
+  padding: 10px 20px;
+  border: 2px solid #D6336C; /* İnce pembe border eklendi */
+  background: #ffffff; /* Hafif gri arka plan */
+  color: #D6336C; /* Yazı rengi */
+  font-size: 20px;
+  border-radius: 50%; /* Yuvarlak buton */
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.back-buttons button:hover {
+  background: #D6336C; /* Hover efekti */
+  color: #fff;
+}
+
+
+  .back-buttons button:hover {
+    background: var(--button-hover-bg);
+    color: var(--button-hover-color);
+  }
+
+  /* GRID STYLING */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 35px;
+    margin-top: 15px;
+    width: 100%;
+  }
+
+  .box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    perspective: 600px;
+  }
+
+  .box-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    background: var(--box-bg);
+    color: var(--box-text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 4px 8px rgba(214, 51, 108, 0.3);
+    cursor: pointer;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    position: relative;
+    text-align: center;
+    padding: 5px;
+  }
+
+  .box.flipped .box-inner {
+    transform: rotateY(180deg);
+  }
+
+  .box-front, .box-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    padding: 5px;
+    word-break: break-word;
+  }
+
+  .box-front {
+    font-size: 16px;
+  }
+
+  .box-back {
+    background: var(--box-back-bg);
+    color: var(--box-back-text);
+    transform: rotateY(180deg);
+    font-size: 16px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .styled-button {
+  padding: 10px 20px;
+  border: 2px solid var(--primary-color);
+  border-radius: 50px;
+  background: var(--button-bg);
+  color: var(--button-color);
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s;
+}
+
+.styled-button:hover {
+  background: var(--button-hover-bg);
+  color: var(--button-hover-color);
+}
+
+</style>
+</head>
+<body>
+
+<div class="logo-left"></div>
+<div class="logo-right"></div>
+
+<div class="question-container">
+  <div class="question-card" id="questionCard">
+    <div class="question-inner">
+      <div class="question-front" id="questionFront">
+        🔍 Soruya Bakmak İçin Tıkla
+      </div>
+      <div class="question-back">
+        <div class="question-text" id="questionText">Bu örnek bir sorudur.</div>
+        <div class="answer-text" id="answerText"></div>
+        <div class="back-buttons">
+          <button id="prevQuestion">◀</button>
+          <button id="diceButton">🎲</button>
+          <button id="showAnswerButton">💡</button>
+          <button id="nextQuestion">▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rastgele Seç Butonu -->
+<div style="margin: 15px 0; text-align: center;">
+  <button id="randomSelectButton" class="styled-button">
+    🎲 Rastgele Birini Seç
+  </button>
+</div>
+
+<div class="grid-container">
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const questionCard = document.getElementById('questionCard');
+const questionText = document.getElementById('questionText');
+const answerText = document.getElementById('answerText');
+const diceButton = document.getElementById('diceButton');
+const showAnswerButton = document.getElementById('showAnswerButton');
+const prevQuestion = document.getElementById('prevQuestion');
+const nextQuestion = document.getElementById('nextQuestion');
+
+const questions = [
+  { q: "7 aylık gebe bir kadın afet sonrası dönemde hangi fiziksel ve psikolojik zorluklarla karşılaşabilir?", a: "Erken doğum, düşük, intrauterin gelişme geriliği, düşük doğum ağırlıklı bebek riski artar. Gebelik diyabeti, hipertansiyon, emzirme sorunları yaşanabilir. Stres, travma, anksiyete ve depresyon gibi ruhsal sorunlar görülebilir." },
+  { q: "Afetlerde kadınların üreme sağlığı hizmetlerine erişimi neden aksar ve bunun sonuçları nelerdir?", a: "Sağlık sisteminin çökmesi, doğum kontrol araçlarının temin edilememesi ve öncelik verilmemesi. Sonuç olarak istenmeyen gebelikler, cinsel yolla bulaşan hastalıklar ve anne-bebek ölümleri artar." },
+  { q: "Toplumsal cinsiyet eşitsizliği afet süreçlerinde kadınların yaşamını nasıl etkiler?", a: "Kadınlar karar alma süreçlerinden dışlanır, kaynaklara erişimi kısıtlanır. Erkeklere göre sağlık, güvenlik ve sosyal hizmetlerden daha az yararlanabilirler. Ataerkil yapılar nedeniyle şiddet ve sömürü riskleri artar." },
+  { q: "Afet bölgelerinde hijyen ve kişisel bakım olanaklarının yetersizliği kadın sağlığını nasıl tehdit eder?", a: "Tuvalet, banyo ve hijyen ürünlerinin eksikliği genital enfeksiyonlara ve pelvik sorunlara yol açar. Toplumsal tabular nedeniyle bu ihtiyaçlar dile getirilemez, sağlık riski büyür." },
+  { q: "Afet sonrasında kadınların cinsel şiddet ve istismar riskinin artmasının sebepleri nelerdir?", a: "Güvenlik zafiyetleri, barınma alanlarının karışıklığı ve denetim eksikliği. Toplumsal cinsiyet eşitsizliği, ataerkil şiddet kültürü. Zorla fuhuş, insan ticareti ve kamp alanlarında cinsel saldırı riskinin artması." },
+  { q: "Sosyal hizmet uzmanlarının afetlerde kadınların ruh sağlığını koruma ve destekleme konusundaki rolleri nelerdir?", a: "Psikososyal destek sağlamak, şiddet mağdurlarına hukuki ve psikolojik destek vermek. Travma, yas, yalnızlık gibi durumlarda danışmanlık sunmak. Kadınların güvenli alanlara erişimini ve sosyal destek ağlarını güçlendirmek." },
+  { q: "Afet süreçlerinde yaşlı kadınların özel sağlık ve bakım ihtiyaçları nelerdir?", a: "Menopoz sonrası sağlık sorunları (ör. kemik erimesi, kalp-damar rahatsızlıkları). İlaç ve hijyen ürünlerine erişim zorluğu. Cinsel yaşam ve mahremiyet ihtiyaçlarının göz ardı edilmesi." },
+  { q: "Afet sonrası erken yaşta evliliklerin artmasının nedenleri ve sonuçları nelerdir?", a: "Ekonomik yoksulluk, güvenlik endişesi, toplumsal baskılar nedeniyle aileler kız çocuklarını evlendirebilir. Sonuç olarak kız çocuklarının eğitim hakkı engellenir, fiziksel ve ruhsal sağlıkları bozulur." },
+  { q: "Toplumsal cinsiyete duyarlı sosyal hizmet yaklaşımı afet yönetiminde neden önemlidir?", a: "Kadınların ve dezavantajlı grupların görünürlüğünü sağlar. Eşitsizliklerin derinleşmesini önler, ihtiyaçlara uygun hizmet sunar. Karar alma süreçlerine kadın katılımını artırır." },
+  { q: "Afet deneyiminin kadınların güçlenmesi ve liderlik rollerini üstlenmeleri açısından yaratabileceği fırsatlar nelerdir?", a: "Kadınlar ailelerini ve topluluklarını koruma ve yeniden inşa süreçlerinde aktif rol alabilir. Ekonomik ve sosyal açıdan bağımsızlaşma fırsatı doğar. Sosyal hizmet uzmanları bu süreçte kadınların güçlü yönlerini desteklemelidir." }
+];
+
+let currentIndex = 0;
+let answerVisible = false;
+
+const showQuestion = () => {
+  questionText.textContent = questions[currentIndex].q;
+  answerText.style.display = "none";
+  answerText.textContent = "";
+  answerVisible = false;
+}
+
+questionCard.addEventListener('click', () => {
+  questionCard.classList.toggle('flipped');
+});
+
+showQuestion();
+
+diceButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const randomIndex = Math.floor(Math.random() * questions.length);
+  currentIndex = randomIndex;
+  showQuestion();
+});
+
+showAnswerButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!answerVisible) {
+    answerText.textContent = questions[currentIndex].a;
+    answerText.style.display = "block";
+  } else {
+    answerText.style.display = "none";
+  }
+  answerVisible = !answerVisible;
+});
+
+prevQuestion.addEventListener('click', (e) => {
+  e.stopPropagation();
+  currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+  showQuestion();
+});
+
+nextQuestion.addEventListener('click', (e) => {
+  e.stopPropagation();
+  currentIndex = (currentIndex + 1) % questions.length;
+  showQuestion();
+});
+
+// GRID OLUŞTURMA
+const grid = document.getElementById('grid');
+
+const studentsList = [
+  ["190804510", "MAHMOOD MOHAMMED JWAIR AL JUMAILI"],
+  ["230804001", "ESRA ZİL"],
+  ["230804003", "SERKAN PALA"],
+  ["230804005", "ZEHRA YILMAZ"],
+  ["230804006", "SERAP FİLİKCİ"],
+  ["230804008", "SÜMEYYE BARAN"],
+  ["230804009", "ALPEREN ESEN"],
+  ["230804011", "SEVGİ OĞUZ"],
+  ["220804012", "ŞEVANUR KELEŞ"],
+  ["230804012", "ESMA NAZ YÜKSEK"],
+  ["220804013", "MEHMET KAYA"],
+  ["230804013", "ECE İDİZ"],
+  ["240804514", "ESMA ÖZGENÇ"],
+  ["230804015", "YELİZ ÇELİK"],
+  ["230804016", "ROJİN ÇELİK"],
+  ["230804617", "MUHAMMED HASSAN"],
+  ["230804017", "RÜMEYSA AYAN"],
+  ["230804018", "FATMA NUR ALPARSLAN"],
+  ["230804019", "ZELİHA ÇETİNER"],
+  ["230804020", "ŞUHEDA YAKUT"],
+  ["230804621", "SİLVA VELİ"],
+  ["230804021", "GÜLBEYAZ AYTAŞ"],
+  ["230804022", "BAHAR YILDIRIM"],
+  ["230804023", "YUNUS OTHAN"],
+  ["230804024", "YAREN ÖÇSOY"],
+  ["220804025", "BURAK ATEŞ"],
+  ["230804025", "CELAL GÜLER"],
+  ["230804026", "İNCİ YALÇIN"],
+  ["230804027", "MEHMET AVUK"],
+  ["230804028", "ZÜLEYHA POLAT"],
+  ["230804029", "SEHER ATLI"],
+  ["230804030", "SAFA AYGÜN"],
+  ["230804031", "İSLAM TAŞKIRAN"],
+  ["230804032", "ESMANUR AYDIN"],
+  ["230804033", "FIRAT BAŞARAN"],
+  ["240804533", "SEMA NUR NAS"],
+  ["230804034", "MERVE ORUÇ"],
+  ["230804035", "MUSTAFA GÖKALP"],
+  ["220804036", "YAKUP AKYOL"],
+  ["230804036", "ELANUR BİLGİLİ"],
+  ["230804037", "AYFER BARAN"],
+  ["220804039", "ENES TEKİR"],
+  ["230804039", "MELİKE ÇELİK"],
+  ["230804040", "KEVSER GÜL YILDIRIM"],
+  ["220804041", "DİCLE ÜREN"],
+  ["230804041", "MARİYE KOÇ"],
+  ["220804042", "SEDA YURT"],
+  ["230804042", "MEHMET BAŞKAN"],
+  ["230804043", "EYÜP HASAN MUSLU"],
+  ["230804045", "ZELAL KARADEMİR"],
+  ["220804047", "AZAD BİLGE"],
+  ["220804048", "AHMET HAKAN KAHRAMAN"],
+  ["230804048", "MEHMET FURKAN BİNİCİOĞLU"],
+  ["230804049", "VEYSEL KARAKAYA"],
+  ["220804050", "FATMA ÖZBAY"],
+  ["220804052", "GÖKÇE GÖKTAŞ"],
+  ["230804052", "MURAT SEFA VAROĞLU"],
+  ["220804053", "FERHAT TOPRAK"],
+  ["230804053", "SEMANUR DEMİR"],
+  ["230804653", "HAZAL MOLLAMUSA"],
+  ["220804054", "NESRİN KILIÇ"],
+  ["230804054", "HALİME EBRAR AYDOĞDU"],
+  ["230804055", "ABDULSELAM AKCAN"],
+  ["220804057", "FURKAN ŞEKER"],
+  ["230804057", "SONGÜL OĞRAK"],
+  ["230804058", "YUSUF ORMAN"],
+  ["230804059", "BERAT GÖKSU"],
+  ["230804060", "ALEV OĞRAK"],
+  ["220804061", "RESUL PARLAK"],
+  ["230804061", "ABDULLAH DEMİR"],
+  ["220804062", "HAVANUR ÇAKAN"],
+  ["230804062", "MUSTAFA DEMİR"],
+  ["230804063", "ÖZGE YILDIZ"],
+  ["230804663", "SİDRET ELMUNTEHA ABLAK"],
+  ["220804064", "BEDRAN ASLAN"],
+  ["230804064", "DEMET DEMİRKIRAN"],
+  ["220804065", "MEHMET EMİN ÖZMERMER"],
+  ["220804066", "MAHMUT YILDIRIM"],
+  ["230804066", "MURAT SEZGİN"],
+  ["230804068", "FATİH ÇAKMAK"],
+  ["230804069", "DİLAN BULUT"],
+  ["230804070", "CEYLAN MUTLU"],
+  ["220804671", "SIDRA ELMUHAMMED"],
+  ["230804073", "GÜLFİDAN KAYA"],
+  ["230804075", "ABDULSAMET GÜREZ"],
+  ["230804076", "İLKNUR DOĞAN"],
+  ["230804077", "HATİCE KARAMAN"],
+  ["220804078", "ÖZGÜR AYAZ"],
+  ["230804050", "RÜMEYSA TOHUMCU"],
+  ["230804078", "FİKRET DİLEK"],
+  ["230804079", "HİCRAN ŞAHİN"],
+  ["230804080", "FEYZA KESMEN"],
+  ["230804081", "EMİRHAN BEKTAŞ"],
+  ["230804082", "MAHMUT CAN KASAP"],
+  ["230804086", "ZEHRA LEVENT"],
+  ["230804087", "HAVIN YILDIZ"],
+  ["220804088", "FERİDE ELMA"],
+  ["230804088", "CENGİZ ALİCİ"],
+  ["230804094", "ŞULE ALTINTAŞ"],
+  ["230804097", "YELİZ GEMİŞ"]
+];
+
+studentsList.forEach((student, i) => {
+  const box = document.createElement('div');
+  box.classList.add('box');
+
+  const inner = document.createElement('div');
+  inner.classList.add('box-inner');
+
+  const front = document.createElement('div');
+  front.classList.add('box-front');
+  front.textContent = i + 1;
+
+  const back = document.createElement('div');
+  back.classList.add('box-back');
+  back.innerHTML = `<div>${student[0]}</div><div>${student[1]}</div>`;
+
+  inner.appendChild(front);
+  inner.appendChild(back);
+  box.appendChild(inner);
+  grid.appendChild(box);
+
+  box.addEventListener('click', () => {
+    box.classList.toggle('flipped');
+  });
+});
+
+// Rastgele seç butonu
+const randomSelectButton = document.getElementById('randomSelectButton');
+randomSelectButton.addEventListener('click', () => {
+  const boxes = document.querySelectorAll('.box');
+  const randomIndex = Math.floor(Math.random() * boxes.length);
+
+  // Önce tüm kutuları kapat
+  boxes.forEach(box => box.classList.remove('flipped'));
+
+  // Rastgele kutuyu aç
+  boxes[randomIndex].classList.add('flipped');
+
+  // Sayfayı kutuya kaydır
+  boxes[randomIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+</script>
+</body>
+</html>
